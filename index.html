@@ -51,12 +51,12 @@
             <input type="text" id="topic" placeholder="Enter topic..." aria-label="Enter Topic" autofocus>
             <button id="generateBtn" aria-label="Generate Prompt">Generate Prompt</button>
             <button id="saveBtn" aria-label="Save Prompt">Save Prompt</button>
-            <div id="loadingIndicator" style="display:none; margin-top:10px; font-weight:bold;">Generating...</div>
+            <div id="loadingIndicator">Generating...</div>
         </section>
 
         <!-- Output Section -->
         <section class="output-section" aria-label="Prompt Output">
-            <textarea id="output" readonly aria-label="Generated Prompt" style="font-size: 1.1rem;"></textarea>
+            <textarea id="output" readonly aria-label="Generated Prompt"></textarea>
             <button id="copyBtn" aria-label="Copy Prompt">
                 <i id="copyIcon" class="fa-solid fa-copy"></i> Copy
             </button>
@@ -65,182 +65,10 @@
         <!-- Saved Prompts Section -->
         <section class="saved-section" aria-label="Saved Prompts">
             <h3>Saved Prompts</h3>
-            <ul id="savedPrompts" style="list-style:none; padding-left:0; max-height:200px; overflow-y:auto;"></ul>
+            <ul id="savedPrompts"></ul>
         </section>
     </div>
 
-    <script>
-    function showMainContent() {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
-    }
-
-    document.getElementById('loginBtn').addEventListener('click', function() {
-        const email = document.getElementById('emailInput').value.trim();
-        const password = document.getElementById('passwordInput').value.trim();
-
-        if (!email || !password) {
-            alert('Please enter both email and password.');
-            return;
-        }
-        // Email format validation
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(email)) {
-            alert('Please enter a valid email address.');
-            return;
-        }
-        showMainContent();
-    });
-
-    // Prompt generation logic
-    document.addEventListener("DOMContentLoaded", function () {
-        const darkModeToggle = document.getElementById("darkModeToggle");
-        const darkModeIcon = darkModeToggle.querySelector("i");
-
-        if (localStorage.getItem("theme") === "dark") {
-            document.body.classList.add("dark");
-            darkModeIcon.classList.replace("fa-moon", "fa-sun");
-        }
-
-        darkModeToggle.addEventListener("click", function () {
-            document.body.classList.toggle("dark");
-            if (document.body.classList.contains("dark")) {
-                darkModeIcon.classList.replace("fa-moon", "fa-sun");
-                localStorage.setItem("theme", "dark");
-            } else {
-                darkModeIcon.classList.replace("fa-sun", "fa-moon");
-                localStorage.setItem("theme", "light");
-            }
-        });
-
-        const generateBtn = document.getElementById("generateBtn");
-        const taskTypeEl = document.getElementById("taskType");
-        const toneEl = document.getElementById("tone");
-        const topicEl = document.getElementById("topic");
-        const outputEl = document.getElementById("output");
-
-        const copyBtn = document.getElementById("copyBtn");
-        const copyIcon = document.getElementById("copyIcon");
-
-        copyBtn.addEventListener("click", function () {
-            if (!outputEl.value.trim()) {
-                alert("Nothing to copy!");
-                return;
-            }
-            navigator.clipboard.writeText(outputEl.value).then(() => {
-                copyIcon.classList.replace("fa-copy", "fa-check");
-                setTimeout(() => {
-                    copyIcon.classList.replace("fa-check", "fa-copy");
-                }, 1500);
-            }).catch(() => {
-                alert("Failed to copy text.");
-            });
-        });
-
-        generateBtn.addEventListener("click", async function () {
-            const loadingIndicator = document.getElementById("loadingIndicator");
-            const taskType = taskTypeEl.value.trim();
-            const tone = toneEl.value.trim();
-            const topic = topicEl.value.trim();
-
-            if (!taskType || !tone || !topic) {
-                outputEl.value = "⚠️ Please select a task type, tone, and enter a topic.";
-                loadingIndicator.style.display = "none";
-                return;
-            }
-
-            loadingIndicator.style.display = "block";
-            generateBtn.disabled = true;
-            outputEl.value = "";
-
-            try {
-                const response = await fetch("http://localhost:3000/generate", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "AIzaSyCidsox9il5Iu6bbiBOAIWzafbCcbyLJ7Q"
-                    },
-                    body: JSON.stringify({
-                        task: taskType,
-                        tone: tone,
-                        topic: topic
-                    })
-                });
-
-                const data = await response.json();
-                if (data && data.prompt) {
-                    outputEl.value = data.prompt;
-                } else {
-                    outputEl.value = "Failed to generate prompt. Try again.";
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Error generating prompt. Check console for details.");
-            } finally {
-                loadingIndicator.style.display = "none";
-                generateBtn.disabled = false;
-            }
-        });
-
-        topicEl.addEventListener("keydown", function (event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                generateBtn.click();
-            }
-        });
-
-        // Saved Prompts Functionality
-        function renderSavedPrompts() {
-            const savedPromptsList = document.getElementById('savedPrompts');
-            if (!savedPromptsList) return;
-            savedPromptsList.innerHTML = '';
-            const saved = JSON.parse(localStorage.getItem('savedPrompts') || '[]');
-            saved.forEach((prompt, index) => {
-                const li = document.createElement('li');
-                li.style.display = 'flex';
-                li.style.justifyContent = 'space-between';
-                li.style.alignItems = 'center';
-                li.style.padding = '8px';
-                li.style.borderBottom = '1px solid #ccc';
-
-                const span = document.createElement('span');
-                span.textContent = prompt;
-
-                const removeBtn = document.createElement('button');
-                removeBtn.textContent = '✕';
-                removeBtn.style.marginLeft = '10px';
-                removeBtn.style.cursor = 'pointer';
-                removeBtn.setAttribute('aria-label', 'Remove Saved Prompt');
-                removeBtn.addEventListener('click', () => {
-                    const savedArray = JSON.parse(localStorage.getItem('savedPrompts') || '[]');
-                    savedArray.splice(index, 1);
-                    localStorage.setItem('savedPrompts', JSON.stringify(savedArray));
-                    renderSavedPrompts();
-                });
-
-                li.appendChild(span);
-                li.appendChild(removeBtn);
-                savedPromptsList.appendChild(li);
-            });
-        }
-
-        // Save Prompt button listener
-        const saveBtn = document.getElementById("saveBtn");
-        if (saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                const outputEl = document.getElementById("output");
-                if (outputEl && outputEl.value.trim()) {
-                    const saved = JSON.parse(localStorage.getItem('savedPrompts') || '[]');
-                    saved.unshift(outputEl.value.trim());
-                    localStorage.setItem('savedPrompts', JSON.stringify(saved));
-                    renderSavedPrompts();
-                }
-            });
-        }
-
-        // Load saved prompts on page load
-        renderSavedPrompts();
-    });
-    </script>
+<script src="./script.js" defer></script>
 </body>
 </html>

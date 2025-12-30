@@ -2,20 +2,23 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const fetch = require("node-fetch"); // Make sure you installed this → npm install node-fetch
+const fetch = (...args) =>
+  import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const API_KEY = "AIzaSyCidsox9il5Iu6bbiBOAIWzafbCcbyLJ7Q"; // ⬅️ your Gemini API key
+// Insert your temporary key locally here for testing
+const API_KEY = "AIzaSyA1vWjj4W9bzA51shAmJegre7rvKXuUZHs";
 
 app.post("/generate", async (req, res) => {
   const { task, tone, topic } = req.body;
 
   try {
+    // Replace 'YOUR_VALID_MODEL_HERE' with a model name returned by ListModels
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${"AIzaSyA1vWjj4W9bzA51shAmJegre7rvKXuUZHs"}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

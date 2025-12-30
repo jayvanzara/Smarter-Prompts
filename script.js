@@ -1,4 +1,25 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // Login button functionality
+    const loginBtn = document.getElementById("loginBtn");
+    const loginScreen = document.getElementById("loginScreen");
+    const mainContent = document.getElementById("mainContent");
+
+    if (loginBtn && loginScreen && mainContent) {
+        loginBtn.addEventListener("click", () => {
+            const emailInput = document.getElementById("emailInput").value.trim();
+            const passwordInput = document.getElementById("passwordInput").value.trim();
+
+            if (emailInput && passwordInput) {
+                loginScreen.style.display = "none";
+                const loginCard = document.getElementById("loginCard");
+                if (loginCard) loginCard.style.display = "none";
+                mainContent.style.display = "block";
+            } else {
+                alert("Please enter both email and password.");
+            }
+        });
+    }
+
     // Get all necessary elements
     const generateBtn = document.getElementById('generateBtn');
     const saveBtn = document.getElementById('saveBtn');
@@ -9,25 +30,32 @@ document.addEventListener("DOMContentLoaded", function () {
     const savedPromptsList = document.getElementById('savedPrompts');
     const loadingIndicator = document.getElementById("loadingIndicator");
 
+    // Hide the loading indicator initially
+    if (loadingIndicator) loadingIndicator.style.display = "none";
+
+    // Increase font size for output and error messages
+    if (output) output.style.fontSize = "16px";
+
+    // Dark mode toggle logic
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener("click", () => {
+            document.body.classList.toggle("dark");
+        });
+    }
+
     // Function to render saved prompts
     function renderSavedPrompts() {
         savedPromptsList.innerHTML = '';
         const saved = JSON.parse(localStorage.getItem('savedPrompts') || '[]');
         saved.forEach((prompt, index) => {
             const li = document.createElement('li');
-            li.style.display = 'flex';
-            li.style.justifyContent = 'space-between';
-            li.style.alignItems = 'center';
-            li.style.padding = '8px';
-            li.style.borderBottom = '1px solid #ccc';
 
             const span = document.createElement('span');
             span.textContent = prompt;
 
             const removeBtn = document.createElement('button');
             removeBtn.textContent = '✕';
-            removeBtn.style.marginLeft = '10px';
-            removeBtn.style.cursor = 'pointer';
             removeBtn.addEventListener('click', () => {
                 const savedArray = JSON.parse(localStorage.getItem('savedPrompts') || '[]');
                 savedArray.splice(index, 1);
@@ -74,7 +102,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 const data = await response.json();
-                console.log(data); // Log the API response for debugging
                 if (data && data.prompt) {
                     output.value = data.prompt;
                 } else {
@@ -100,7 +127,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 renderSavedPrompts();
             }
         });
-    } else {
-        console.error("Save button not found!");
+    }
+
+    // Copy button functionality using Clipboard API with temporary text change
+    const copyBtn = document.getElementById("copyBtn");
+    const outputArea = document.getElementById("output");
+
+    if (copyBtn && outputArea) {
+        copyBtn.addEventListener("click", async () => {
+            const text = outputArea.value.trim();
+            if (!text) return;
+
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = "Copied!";
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error("Failed to copy:", err);
+            }
+        });
     }
 });

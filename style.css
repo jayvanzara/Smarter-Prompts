@@ -130,6 +130,18 @@ textarea {
     transition: box-shadow 0.3s, border-color 0.3s;
 }
 
+/* Added styles for output textarea and error messages */
+#output {
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+#errorMessage {
+    font-size: 16px;
+    color: #FF3B1F;
+    margin-top: 6px;
+}
+
 /* Dark Mode */
 body.dark {
     background-color: #1c1c1e;
@@ -384,3 +396,17 @@ body.dark .saved-section h3::after {
     background-color: #FF644E;
 }
 
+/* Loading Indicator Alignment */
+#loadingIndicator {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 1rem;
+    color: #1a1a1a; /* light mode color */
+    line-height: 1.5; /* helps vertical alignment */
+    transform: translateY(4px); /* adjust vertical alignment with buttons */
+}
+
+/* Dark mode color fix */
+body.dark #loadingIndicator {
+    color: #f5f5f7; /* light color for visibility in dark mode */
+}
